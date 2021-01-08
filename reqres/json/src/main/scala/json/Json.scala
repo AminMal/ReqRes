@@ -1,11 +1,8 @@
 package json
 
-import scala.reflect.runtime.{universe => ru}
-
 object Json {
   sealed trait JsonValue {
     def toString: String
-    def valueInside: String = this.toString
   }
 
   final case class JsonString(value: String) extends JsonValue {
