@@ -8,7 +8,6 @@ import json.Json.Converter._
 
 object Run extends App {
 
-
   case class Admin(name: String, age: Int)
   object Admin {
     implicit val wjs: Writer[Admin] = JsonDefault.writer[Admin]
@@ -19,15 +18,27 @@ object Run extends App {
     implicit val wjs: Writer[TestingWriter] = JsonDefault.writer[TestingWriter]
   }
 
-  val admin = Admin("some name", 21)
-  println(admin.toJson)
-
   val testingWriter = TestingWriter(
     name = "test",
     age = 2.54,
     numbers = Seq(1, 2, 3),
-    admin = admin
+    admin = Admin("Joe", 34)
   )
-  println(testingWriter.toJson)
+  println(testingWriter.toJson) // Works pretty well
+
+  object TestingReader {
+    val someJsonSeq: JsonValue = Seq(1, 2, 3).toJson
+  }
+  import TestingReader._
+  // Now say you have a JsonValue as a Seq of numbers like "[1, 2, 3]" without the quotes
+  // And you want to extract it as List[Int], here's how you do it
+  val normalList: List[Int] = someJsonSeq.extractAs[List[Int]]
+  println(normalList)
+  try {
+    println(someJsonSeq.extractAs[String])
+  } catch {
+    case CannotCastTypeException =>
+      println("Cannot cast as string, because It's a list of ints")
+  }
 }
 
