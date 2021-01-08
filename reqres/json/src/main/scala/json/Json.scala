@@ -14,19 +14,19 @@ object Json {
 
   trait JsonNumber extends JsonValue
 
-  implicit class JsonInt(value: Int) extends JsonNumber {
+  implicit class JsonInt(val value: Int) extends JsonNumber {
     override def toString: String = value.toString
   }
 
-  implicit class JsonLong(value: Long) extends JsonNumber {
+  implicit class JsonLong(val value: Long) extends JsonNumber {
     override def toString: String = value.toString
   }
 
-  implicit class JsonFloat(value: Float) extends JsonNumber {
+  implicit class JsonFloat(val value: Float) extends JsonNumber {
     override def toString: String = value.toString
   }
 
-  implicit class JsonDouble(value: Double) extends JsonNumber {
+  implicit class JsonDouble(val value: Double) extends JsonNumber {
     override def toString: String = value.toString
   }
 
@@ -61,6 +61,8 @@ object Json {
     implicit val doubleWriter: Writer[Double] = JsonDouble
     implicit val longWriter: Writer[Long] = JsonLong
     implicit def seqWriter[T](implicit wjs: Writer[T]): Writer[Seq[T]] = (seq: Seq[T]) => JsonArray(seq.map(wjs.makeJson))
+    implicit def listWriter[T](implicit wjs: Writer[T]): Writer[List[T]] = (list: List[T]) => JsonArray(list.map(wjs.makeJson))
+    implicit def arrayWriter[T](implicit wjs: Writer[T]): Writer[Array[T]] = (array: Array[T]) => JsonArray(array.map(wjs.makeJson))
 
     implicit class ImplicitConverter[T](value: T) {
       def toJson(implicit wjs: Writer[T]): JsonValue = wjs.makeJson(value)
