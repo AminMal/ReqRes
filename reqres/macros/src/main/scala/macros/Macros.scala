@@ -7,32 +7,25 @@ class Macros(val c: blackbox.Context) {
   import json.Json.Converter._
   import json.Json._
 
-  def defaultWriterImpl[T](implicit atag: c.WeakTypeTag[T]): c.Expr[Writer[T]] = {
-    val tpe: Type = weakTypeOf[T]
-    val fields: List[String] = tpe.decls.filter(_.isTerm).filter(_.isPrivateThis).map(_.name.toString.filterNot(_ == ' ')).toList
+  def mWriteImpl[A : c.WeakTypeTag]: c.Expr[Writer[A]] = {
+    val tpe: Type = weakTypeOf[A]
+    val members = tpe.decls
 
-    println("fields of class: \"" + tpe.typeSymbol.name + "\" are:\n" + fields.mkString(" "))
+    val params = members.filter(_.isPrivateThis)
+    val writerParams: Seq[Tree] = params.map { field =>
+      val fullName = field.name.toString.filterNot(_ == ' ')
+      val name = TermName(fullName)
+      val mapKey: String = name.decodedName.toString
+      q"$mapKey -> value.$name"
+    }.toSeq
 
-    val dealiased = atag.tpe.dealias
-    println("dealiased: ")
-    println(dealiased.members.filter(_.isPrivateThis).map(_.name.toString.filterNot(_ == ' ')))
-
-    reify {
-      (_: T) => JsonObject("name" -> 2, "family" -> "amin")
+    c.Expr[Writer[A]] {
+      q"""
+         import json.Json.Converter._
+         new Writer[$tpe] {
+           def makeJson(value: $tpe): JsonValue = JsonObject(..$writerParams)
+         }
+       """
     }
   }
-
-  def testMacroImpl[T : c.WeakTypeTag](content: c.Expr[T]): c.Expr[Unit] = {
-    val u = c.universe
-
-    val d: String = show(content.actualType)
-    val f: String = show(content)
-    println(d)
-    println(f)
-    reify {
-      println("content: " + content.splice)
-//      println("tree: " + content.value)
-    }
-  }
-
 }

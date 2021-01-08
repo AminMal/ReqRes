@@ -12,19 +12,21 @@ object Json {
     override def toString: String = "\"" + value + "\""
   }
 
-  final case class JsonInt(value: Int) extends JsonValue {
+  trait JsonNumber extends JsonValue
+
+  implicit class JsonInt(value: Int) extends JsonNumber {
     override def toString: String = value.toString
   }
 
-  final case class JsonLong(value: Long) extends JsonValue {
+  implicit class JsonLong(value: Long) extends JsonNumber {
     override def toString: String = value.toString
   }
 
-  final case class JsonFloat(value: Float) extends JsonValue {
+  implicit class JsonFloat(value: Float) extends JsonNumber {
     override def toString: String = value.toString
   }
 
-  final case class JsonDouble(value: Double) extends JsonValue {
+  implicit class JsonDouble(value: Double) extends JsonNumber {
     override def toString: String = value.toString
   }
 
@@ -43,24 +45,6 @@ object Json {
     }
   }
 
-  def runtimeReflector[T : ru.TypeTag]: Writer[T] = {
-    import Converter._
-    val t = ru.typeOf[T]
-    val members: List[String] = t.decls.filter(_.isTerm).filter(_.isPrivateThis).toList.map(_.name.toString)
-
-    def iterate(source: List[String] = members, acc: Seq[(String, JsonValueWrapper)] = Seq()): Seq[(String, JsonValueWrapper)] = {
-      if (source.isEmpty) acc
-      else {
-        val value = source.head.filterNot(_ == ' ') -> new JsonValueWrapperImpl(t.decl(ru.TermName(source.head)).asTerm.toString)
-        iterate(source.tail, acc :+ value)
-      }
-    }
-
-    (_: T) => JsonObject(
-      iterate(): _*
-    )
-  }
-
   trait Writer[T] {
     def makeJson(value: T): JsonValue
   }
@@ -71,8 +55,12 @@ object Json {
 
   object Converter {
 
-    implicit val stringWriter: Writer[String] = (string: String) => JsonString(string)
-    implicit val intWriter: Writer[Int] = (int: Int) => JsonInt(int)
+    implicit val stringWriter: Writer[String] = JsonString.apply
+    implicit val intWriter: Writer[Int] = JsonInt
+    implicit val floatWriter: Writer[Float] = JsonFloat
+    implicit val doubleWriter: Writer[Double] = JsonDouble
+    implicit val longWriter: Writer[Long] = JsonLong
+    implicit def seqWriter[T](implicit wjs: Writer[T]): Writer[Seq[T]] = (seq: Seq[T]) => JsonArray(seq.map(wjs.makeJson))
 
     implicit class ImplicitConverter[T](value: T) {
       def toJson(implicit wjs: Writer[T]): JsonValue = wjs.makeJson(value)
