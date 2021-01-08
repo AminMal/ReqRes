@@ -12,6 +12,12 @@ object Person {
       JsonObject("name" -> p.name, "age" -> p.age)
 }
 ```
+Or even simpler!
+```
+object Person {
+  implicit val writer: Writer[Person] = JsonDefault.write[Person]
+}
+```
 You can convert your object of type `Person` into JSON format like:
 ```
 val person = Person("Bob", 32)
