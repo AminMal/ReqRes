@@ -4,7 +4,6 @@ import scala.reflect.macros.blackbox
 
 class Macros(val c: blackbox.Context) {
   import c.universe._
-  import json.Json.Converter._
   import json.Json._
 
   def mWriteImpl[A : c.WeakTypeTag]: c.Expr[Writer[A]] = {
