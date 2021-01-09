@@ -68,6 +68,7 @@ object Json {
 
   sealed trait JsonValueWrapper
   implicit class JsonValueWrapperImpl[T](val value: T)(implicit val wjs: Writer[T]) extends JsonValueWrapper
+  implicit class JsonOptionalWrapper[T](val value: Option[T])(implicit wjs: Writer[T]) extends JsonValueWrapper
 
   object JsonValueWrapperImpl {
     def unapply[T](arg: JsonValueWrapperImpl[T]): Option[JsonValue] = Some(arg.wjs.makeJson(arg.value))

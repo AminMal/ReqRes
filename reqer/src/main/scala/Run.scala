@@ -29,5 +29,12 @@ object Run extends App {
     admin = admin
   )
   println(testingWriter.toJson)
+  case class IHaveOptionals(name: String, numbers: Option[Int])
+  object IHaveOptionals {
+    implicit val writer: Writer[IHaveOptionals] = JsonDefault.optionalWriter[IHaveOptionals]
+  }
+
+  val o1 = IHaveOptionals("Amin", Some(1))
+  val o2 = IHaveOptionals("Ali", None)
 }
 
