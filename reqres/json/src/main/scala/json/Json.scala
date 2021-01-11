@@ -33,7 +33,10 @@ object Json {
 
   final case class JsonObject(values: (String, JsonValueWrapper)*) extends JsonValue {
     override def toString: String = {
-      values.map { pair =>
+      values.filter{ pair =>
+        pair._2 != JsonNull
+      }
+        .map { pair =>
         pair._2 match {
           case JsonValueWrapperImpl(value) =>
             "\"" + pair._1 + "\":" + value.toString
@@ -69,6 +72,7 @@ object Json {
   sealed trait JsonValueWrapper
   implicit class JsonValueWrapperImpl[T](val value: T)(implicit val wjs: Writer[T]) extends JsonValueWrapper
   implicit class JsonOptionalWrapper[T](val value: Option[T])(implicit wjs: Writer[T]) extends JsonValueWrapper
+  object JsonNull extends JsonValueWrapper
 
   object JsonValueWrapperImpl {
     def unapply[T](arg: JsonValueWrapperImpl[T]): Option[JsonValue] = Some(arg.wjs.makeJson(arg.value))
