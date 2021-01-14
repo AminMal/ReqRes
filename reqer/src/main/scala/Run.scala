@@ -10,30 +10,35 @@ object Run extends App {
 
   case class Person(name: String, age: Int)
   object Person {
-    implicit val writer: Writer[Person] = JsonDefault.writer[Person]
-  }
-  case class ComplexDataStructure(
-                                 structureName: String,
-                                 number_of_usages: Int,
-                                 persons: Option[Person]
-                                 )
-  object ComplexDataStructure {
-    implicit val writer: Writer[ComplexDataStructure] = JsonDefault.writer[ComplexDataStructure]
+    implicit val wjs: Writer[Person] = JsonDefault.writer[Person]
   }
 
-  val nonEmptyPersons = ComplexDataStructure (
-    "some complex data structure",
-    number_of_usages = 2,
-    persons = Some(Person("Amin", 21))
+  case class Complex(
+                    id: String,
+                    persons: Seq[Option[Person]],
+                    maybeNumbers: Option[Seq[Int]]
+                    )
+  object Complex {
+    implicit val wjs: Writer[Complex] = JsonDefault.writer[Complex]
+  }
+
+  val a = Person("Amin", 21)
+  val b = Person("Ali", 32)
+
+  val firstComplex: Complex = Complex(
+    id = "12Abd4",
+    persons = Seq(Some(a), None, Some(b), None, None),
+    maybeNumbers = Some(Seq(1, 2, 3))
   )
-  val emptyPersons = ComplexDataStructure (
-    "another complex ds",
-    number_of_usages = 0,
-    persons = None
+
+  val secondComplex: Complex = Complex (
+    id = "someId",
+    persons = Seq(Some(a)),
+    maybeNumbers = None
   )
-  println("the one that has some person in it ->")
-  println(nonEmptyPersons.toJson.toString)
-  println("The one that has none inside -> ")
-  println(emptyPersons.toJson.toString)
+
+  println(firstComplex.toJson.toString)
+  println(secondComplex.toJson.toString)
+
 }
 
