@@ -59,7 +59,7 @@ object Json {
     override def toString: String = value.filter(_ != JsonNull).map(_.toString).mkString("[", ",", "]")
   }
 
-  final case class JsonObject(values: (String, JsonValueWrapper)*) extends JsonValue {
+  final class JsonObject(val values: (String, JsonValueWrapper)*) extends JsonValue {
     override def toString: String = {
       values.filter (_._2 != JsonNull)
         .map { pair =>
@@ -69,6 +69,13 @@ object Json {
           }
         }.mkString("{", ",", "}")
     }
+  }
+
+  object JsonObject {
+    /* to fix UNEXPECTED apply method in case class apply method */
+    def apply(values: (String, JsonValueWrapper)*): JsonObject = new JsonObject(values: _*)
+
+    def unapply(arg: JsonObject): Option[Seq[(String, JsonValueWrapper)]] = Some(arg.values)
   }
 
   trait Writer[T] {
