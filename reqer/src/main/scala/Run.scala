@@ -40,17 +40,5 @@ object Run extends App {
 
   println(firstComplex.toJson.toString)
   println(secondComplex.toJson.toString)
-  val obj = JsonObject("single param" -> 2)
-  obj match {
-    case JsonObject(values) =>
-      println("Values => " + values.map {
-        case (first, second) =>
-          first + " -> " + (second match {  /** Testing JsonObject unapply, works fine **/
-            case impl: JsonValueWrapperImpl[_] => impl.value.toString
-            case wrapper: JsonOptionalWrapper[_] => wrapper.value.toString
-            case Json.JsonNull => "null"
-          })
-      })
-  }
 }
 

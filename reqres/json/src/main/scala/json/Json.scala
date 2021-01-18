@@ -105,14 +105,18 @@ object Json {
   }
 
   sealed trait JsonValueWrapper
-  implicit class JsonValueWrapperImpl[T](val value: T)(implicit val wjs: Writer[T]) extends JsonValueWrapper
-  implicit class JsonOptionalWrapper[T](val value: Option[T])(implicit wjs: Writer[T]) extends JsonValueWrapper
+  implicit class JsonValueWrapperImpl[T](value: T)(implicit val wjs: Writer[T]) extends JsonValueWrapper {
+    private def getValue: T = value
+  }
+  implicit class JsonOptionalWrapper[T](value: Option[T])(implicit wjs: Writer[T]) extends JsonValueWrapper {
+    private def getValue: Option[T] = value
+  }
   object JsonNull extends JsonValueWrapper with JsonValue {
     override def toString: String = ""
   }
 
   object JsonValueWrapperImpl {
-    def unapply[T](arg: JsonValueWrapperImpl[T]): Option[JsonValue] = Some(arg.wjs.makeJson(arg.value))
+    def unapply[T](arg: JsonValueWrapperImpl[T]): Option[JsonValue] = Some(arg.wjs.makeJson(arg.getValue))
   }
 
 }
